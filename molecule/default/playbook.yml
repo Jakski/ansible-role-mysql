@@ -1,0 +1,25 @@
+---
+- hosts: instance
+  tasks:
+    - import_role:
+        name: mysql
+      vars:
+        mysql_python_package: python3-pymysql
+        mysql_root_password: qwe
+        mysql_databases:
+          db1:
+            collation: latin1_swedish_ci
+            encoding: latin1
+          db2:
+        mysql_users:
+          - name: db1_owner
+            host: 127.0.0.1
+            privileges:
+              - "db1.*:ALL"
+            password: db1_password
+          - name: dbs_owner
+            host: 127.0.0.1
+            privileges:
+              - "db1.*:ALL"
+              - "db2.*:ALL"
+            password: dbs_password

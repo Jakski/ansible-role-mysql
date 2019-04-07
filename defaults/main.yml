@@ -1,0 +1,53 @@
+###
+# Package with MySQL
+mysql_package: mysql-server
+
+###
+# Package with Python MySQL driver
+mysql_python_package: python-pymysql
+
+###
+# MySQL service name
+mysql_service: mysql
+
+###
+# MySQL service desired state. This value is passed directly to `service`
+# module.
+#
+# Restart or privilege/access management won't happen, if it's set to
+# 'stopped'.
+mysql_state: started
+
+###
+# Restart service when necessary
+mysql_restart: true
+
+###
+# Enable MySQL service
+mysql_enable: true
+
+###
+# Server configuration file
+mysql_config_file: /etc/mysql/my.cnf
+
+###
+# Client configuration file
+mysql_client_config_file: /root/.my.cnf
+
+###
+# Client configuration
+#
+# By default it will contain access credentials for root
+mysql_client_config: {}
+
+###
+# Server configuration
+mysql_config: {}
+
+###
+#
+mysql_users: []
+
+###
+#
+mysql_databases: {}

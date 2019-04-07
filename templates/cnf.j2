@@ -1,0 +1,14 @@
+{% for section, settings in config.items() %}
+[{{ section }}]
+{% for key, value in settings.items() %}
+{# Handle cases like replicate_do_db #}
+{% if value is not string and value is sequence %}
+{% for item in value %}
+{{ key }} = {{ item }}
+{% endfor %}
+{% else %}
+{{ key }} = {{ value }}
+{% endif %}
+{% endfor %}
+
+{% endfor %}

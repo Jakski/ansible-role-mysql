@@ -1,0 +1,78 @@
+---
+- name: Install MySQL
+  apt:
+    name: "{{ mysql_package }}"
+    default_release: "{{ mysql_package_release | default(omit) }}"
+    state: present
+  notify:
+    - Restart MySQL
+
+- name: Install Python MySQL driver
+  apt:
+    name: "{{ mysql_python_package }}"
+    state: present
+
+- name: Create server configuration file
+  template:
+    src: cnf.j2
+    dest: "{{ mysql_config_file }}"
+    follow: true
+    owner: root
+    group: root
+    mode: 0644
+  vars:
+    config: "{{ _mysql_config | combine(mysql_config, recursive=True) }}"
+  notify:
+    - Restart MySQL
+
+- name: "{{ mysql_enable | ternary('Enable', 'Disable') }} MySQL service"
+  service:
+    name: "{{ mysql_service }}"
+    state: "{{ mysql_state }}"
+    enabled: "{{ mysql_enable }}"
+
+- name: Set root password
+  mysql_user:
+    name: root
+    host_all: true
+    password: "{{ mysql_root_password }}"
+    login_unix_socket: "{{ _mysql_login_socket }}"
+    config_file: "{{ mysql_client_config_file }}"
+  when: mysql_state != 'stopped'
+
+- name: Create client configuration file
+  template:
+    src: cnf.j2
+    dest: "{{ mysql_client_config_file }}"
+    owner: root
+    group: root
+    mode: 0400
+  vars:
+    config: "{{ _mysql_client_config | combine(mysql_client_config, recursive=True) }}"
+
+- name: Create users
+  mysql_user:
+    name: "{{ item.name }}"
+    host: "{{ item.host }}"
+    priv: "{{ item.privileges | join('/') }}"
+    state: "{{ item.state | default('present') }}"
+    password: "{{ item.password }}"
+    login_unix_socket: "{{ _mysql_login_socket }}"
+    config_file: "{{ mysql_client_config_file }}"
+  loop: "{{ mysql_users }}"
+  loop_control:
+    label: "{{ item.name }}@{{ item.host }}"
+  when: mysql_state != 'stopped'
+
+- name: Create databases
+  mysql_db:
+    name: "{{ item.key }}"
+    collation: "{{ item.value.collation | default(omit) }}"
+    encoding: "{{ item.value.encoding | default(omit) }}"
+    state: "{{ item.value.state | default('present') }}"
+    login_unix_socket: "{{ _mysql_login_socket }}"
+    config_file: "{{ mysql_client_config_file }}"
+  loop: "{{ mysql_databases | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  when: mysql_state != 'stopped'
