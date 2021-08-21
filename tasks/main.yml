@@ -21,7 +21,7 @@
     group: root
     mode: 0644
   vars:
-    config: "{{ _mysql_config | combine(mysql_config, recursive=True) }}"
+    config: "{{ mysql_config }}"
   notify:
     - Restart MySQL
 
@@ -48,7 +48,7 @@
     group: root
     mode: 0400
   vars:
-    config: "{{ _mysql_client_config | combine(mysql_client_config, recursive=True) }}"
+    config: "{{ mysql_client_config }}"
 
 - name: Create users
   mysql_user:
